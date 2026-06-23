@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Queen B Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;color:#333}
+@keyframes spin{to{transform:rotate(360deg)}}.spin{animation:spin 1s linear infinite;display:inline-block}
+input,textarea,select{font-family:inherit}
+input:focus,textarea:focus,select:focus{outline:none;border-color:#ccccff!important}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:#ddd;border-radius:3px}
+a{color:inherit;text-decoration:none}
+#app{display:flex;min-height:100vh}
+#sidebar{width:260px;min-width:260px;background:#181824;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:20;transition:left .2s;overflow-y:auto}
+#sidebar.closed{left:-260px}
+.sb-head{padding:24px 22px 20px;border-bottom:1px solid #2a2a3a;display:flex;align-items:center;gap:10}
+.sb-logo{width:34px;height:34px;border-radius:8px;background:#ccccff;display:flex;align-items:center;justify-content:center}
+.sb-title{font-size:16px;font-weight:700;color:#fff;letter-spacing:-.02em}
+.sb-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#555;padding:8px 12px 12px}
+.sb-nav{padding:16px 12px;flex:1}
+.sb-btn{display:flex;align-items:center;gap:12;width:100%;padding:11px 14px;margin-bottom:2px;border:none;border-radius:10px;background:transparent;color:#fff;cursor:pointer;font-size:13.5px;font-weight:500;font-family:inherit;text-align:left;transition:all .12s}
+.sb-btn:hover{background:#1f1f30}
+.sb-btn.active{background:#ccccff;color:#111;font-weight:700}
+.sb-foot{padding:16px 22px;border-top:1px solid #2a2a3a;font-size:11px;color:#444}
+#main-wrap{flex:1;margin-left:260px;transition:margin-left .2s;display:flex;flex-direction:column}
+#main-wrap.full{margin-left:0}
+#navbar{height:60px;background:#181824;display:flex;align-items:center;padding:0 24px;justify-content:space-between;position:sticky;top:0;z-index:10;border-bottom:1px solid #2a2a3a}
+.nav-left{display:flex;align-items:center;gap:16}
+.nav-right{display:flex;align-items:center;gap:16}
+.nav-title{font-size:15px;font-weight:600;color:#fff}
+.nav-icon{background:none;border:none;color:#888;cursor:pointer;padding:4px;position:relative}
+.nav-dot{position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:#ccccff}
+.nav-sep{width:1px;height:28px;background:#2a2a3a}
+.nav-user{display:flex;align-items:center;gap:10}
+.nav-name{font-size:14px;font-weight:600;color:#fff}
+.avatar{width:36px;height:36px;border-radius:50%;background:#ccccff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#111}
+#content{flex:1;padding:28px 32px;max-width:1100px}
+.page-hdr{margin-bottom:24px}
+.page-hdr h2{font-size:22px;font-weight:700;color:#333;margin:0}
+.page-hdr p{margin:4px 0 0;color:#888;font-size:14px}
+.card{background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:24px;margin-bottom:16px}
+.stat{background:#f8f9fa;border:1px solid #e5e5e5;border-radius:12px;padding:20px 24px;flex:1;min-width:160px}
+.stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:6px}
+.stat-val{font-size:28px;font-weight:700;color:#333;line-height:1}
+.stat-sub{font-size:12px;color:#888;margin-top:4px}
+.stats-row{display:flex;gap:16;margin-bottom:24px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;gap:6;padding:10px 20px;background:#ccccff;color:#111;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.outline{background:transparent;color:#ccccff;border:1.5px solid #ccccff}
+.btn.sm{padding:6px 14px;font-size:12px}
+.btn.danger{background:#dc3545;color:#fff}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.inp{width:100%;padding:10px 14px;border:1.5px solid #e5e5e5;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;color:#333;box-sizing:border-box}
+.inp-row{display:flex;gap:10}
+.progress-bar{height:6px;background:#f8f9fa;border-radius:6px;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;background:#ccccff;border-radius:6px;transition:width .3s}
+.tabs{display:flex;gap:0;border-bottom:1px solid #e5e5e5;margin-bottom:20px}
+.tab-btn{padding:10px 20px;border:none;border-bottom:3px solid transparent;background:transparent;color:#888;font-weight:500;font-size:14px;cursor:pointer;font-family:inherit;transition:all .15s}
+.tab-btn.active{color:#333;font-weight:700;border-bottom-color:#ccccff}
+.kanban-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.kanban-col{background:#f8f9fa;border:2px dashed #e5e5e5;border-radius:12px;padding:16px;min-height:320px;transition:all .15s}
+.kanban-col.over{border-color:#ccccff;background:#ccccff08}
+.kanban-col-hdr{display:flex;align-items:center;gap:8;margin-bottom:14px;padding:0 4px}
+.kanban-dot{width:10px;height:10px;border-radius:50%}
+.kanban-col-title{font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:#333}
+.kanban-count{margin-left:auto;font-size:12px;color:#888;font-weight:600;background:#fff;border-radius:6px;padding:2px 8px}
+.kanban-card{background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;margin-bottom:10px;cursor:grab;transition:box-shadow .15s}
+.kanban-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.kanban-card-top{display:flex;justify-content:space-between;align-items:flex-start}
+.kanban-card-title{font-weight:600;font-size:14px;color:#333;line-height:1.3;flex:1}
+.kanban-card-del{background:none;border:none;cursor:pointer;color:#888;padding:0;margin-left:8px;font-size:16px}
+.kanban-card-meta{display:flex;align-items:center;gap:8;margin-top:10px}
+.empty-col{text-align:center;color:#888;font-size:13px;padding:48px 0;opacity:.5}
+.code-out{background:#1e1e2e;border-radius:10px;padding:20px;overflow-x:auto;margin-top:14px}
+.code-out pre{margin:0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:13px;line-height:1.7;color:#D4D4D4;white-space:pre-wrap;word-break:break-word}
+.result-item{display:flex;align-items:flex-start;gap:12;padding:12px 16px;border-radius:8px;border:1px solid #e5e5e5;margin-bottom:8px}
+.result-item.fail{background:#dc354508;border-color:#dc354520}
+.result-item.warn{background:#f0ad4e08;border-color:#f0ad4e20}
+.result-url{font-size:13px;font-weight:600;color:#333;word-break:break-all}
+.result-snippet{font-size:12px;font-family:monospace;background:#dc354510;padding:6px 10px;border-radius:4px;margin-top:4px;color:#dc3545;line-height:1.5}
+.qa-page{padding:20px;border-left:4px solid #ccccff;margin-bottom:12px}
+.qa-page.has-fail{border-left-color:#dc3545}
+.qa-page.has-warn{border-left-color:#f0ad4e}
+.qa-check{display:flex;align-items:center;gap:10;font-size:13px;color:#333;padding:6px 10px;background:#f8f9fa;border-radius:6px;margin-bottom:4px}
+.qa-check-label{font-weight:600;min-width:90px}
+.issue-row{display:flex;align-items:flex-start;gap:10;font-size:13px;padding:8px 12px;border-radius:6px;margin-bottom:4px;border:1px solid #dc354515;background:#dc354508}
+.issue-row.warn-issue{border-color:#f0ad4e20;background:#f0ad4e10}
+.cal-event{display:flex;align-items:stretch;border-radius:10px;padding:14px 18px;transition:box-shadow .12s;cursor:default;margin-bottom:10px}
+.cal-event:hover{box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.cal-time{min-width:100px;margin-right:20px}
+.cal-time-main{font-size:14px;font-weight:600;color:#333}
+.cal-time-dur{font-size:12px;color:#888;margin-top:2px}
+.cal-details{flex:1}
+.cal-summary{font-size:15px;font-weight:600;color:#333;margin-bottom:6px}
+.cal-meta{display:flex;flex-wrap:wrap;gap:14;font-size:12px;color:#888}
+.cal-join{display:inline-flex;align-items:center;gap:6;font-size:12px;font-weight:600;color:#333;padding:7px 14px;border:1.5px solid #e5e5e5;border-radius:8px;background:#fff;white-space:nowrap;transition:border-color .12s;text-decoration:none}
+.cal-join:hover{border-color:#ccccff}
+.day-label{display:flex;align-items:center;gap:10;margin-bottom:12px}
+.day-name{font-size:14px;font-weight:700;color:#333}
+.upload-box{border:2px dashed #e5e5e5;border-radius:12px;text-align:center;cursor:pointer;background:#f8f9fa;overflow:hidden;min-height:180px;display:flex;align-items:center;justify-content:center;transition:border-color .15s}
+.upload-box:hover{border-color:#ccccff}
+.upload-box img{width:100%;height:100%;object-fit:cover;border-radius:10px}
+.apikey-bar{display:flex;align-items:center;gap:12;padding:14px 20px;background:#f8f9fa;border:1px solid #e5e5e5;border-radius:12px;margin-bottom:20px}
+.apikey-bar input{border:none;background:transparent;flex:1;padding:6px 0;font-size:13px;font-family:inherit;color:#333}
+.apikey-bar input:focus{outline:none}
+.add-link{background:none;border:none;color:#ccccff;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;padding:4px 0}
+.remove-btn{background:none;border:none;cursor:pointer;color:#888;padding:4px;font-size:16px}
+</style>
+</head>
+<body>
+<div id="app">
+<!-- Sidebar -->
+<nav id="sidebar">
+  <div class="sb-head">
+    <div class="sb-logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/></svg></div>
+    <span class="sb-title">Dashboard</span>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-label">Tools</div>
+    <div id="nav-buttons"></div>
+  </div>
+  <div class="sb-foot">Built with Claude</div>
+</nav>
+<!-- Main -->
+<div id="main-wrap">
+  <header id="navbar">
+    <div class="nav-left">
+      <button id="menu-btn" class="nav-icon" style="display:none" onclick="toggleSidebar()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button>
+      <span class="nav-title" id="nav-page-title">Calendar</span>
+    </div>
+    <div class="nav-right">
+      <button class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="nav-dot"></span></button>
+      <button class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/></svg></button>
+      <div class="nav-sep"></div>
+      <div class="nav-user">
+        <span class="nav-name">Queen B</span>
+        <div class="avatar">Q</div>
+      </div>
+    </div>
+  </header>
+  <main id="content"></main>
+</div>
+</div>
+
+<script>
+/* ═══════ CONSTANTS ═══════ */
+const NAV_ITEMS=[
+  {id:'calendar',label:'Calendar',svg:'<path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/>'},
+  {id:'projects',label:'Projects & Deadlines',svg:'<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/>'},
+  {id:'codegen',label:'Code Generator',svg:'<path d="m18 16 4-4-4-4M6 8l-4 4 4 4M14.5 4l-5 16"/>'},
+  {id:'lorem',label:'Lorem Ipsum Checker',svg:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><circle cx="11.5" cy="14.5" r="2.5"/><path d="m13.3 14.3 1.7 1.7"/>'},
+  {id:'qa',label:'Website QA',svg:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>'},
+  {id:'photo',label:'Doctor Blog Image',svg:'<path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/><line x1="16" x2="22" y1="5" y2="5"/><line x1="19" x2="19" y1="2" y2="8"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>'},
+];
+
+const CAL_EVENTS=[
+  {id:'1',summary:'AHM daily Meeting',start:'2026-06-20T17:00:00+08:00',end:'2026-06-20T17:30:00+08:00',location:'Philippines',meetUrl:'https://meet.google.com/qxt-kuij-nuw',organizer:'shinna',attendees:16},
+  {id:'2',summary:'Client Review',start:'2026-06-20T23:30:00+08:00',end:'2026-06-21T00:00:00+08:00',meetUrl:'https://meet.google.com/mxc-xpaf-dwm',organizer:'joel',attendees:9},
+  {id:'3',summary:'AHM daily Meeting',start:'2026-06-22T17:00:00+08:00',end:'2026-06-22T17:30:00+08:00',location:'Philippines',meetUrl:'https://meet.google.com/qxt-kuij-nuw',organizer:'shinna',attendees:16},
+  {id:'4',summary:'Client Review',start:'2026-06-22T22:30:00+08:00',end:'2026-06-22T23:00:00+08:00',meetUrl:'https://meet.google.com/mxc-xpaf-dwm',organizer:'joel',attendees:9},
+  {id:'5',summary:'AHM daily Meeting',start:'2026-06-23T17:00:00+08:00',end:'2026-06-23T17:30:00+08:00',location:'Philippines',meetUrl:'https://meet.google.com/qxt-kuij-nuw',organizer:'shinna',attendees:16},
+  {id:'6',summary:'Team Meeting',start:'2026-06-23T18:00:00+08:00',end:'2026-06-23T21:00:00+08:00',meetUrl:'https://meet.google.com/wyx-agvq-isd',organizer:'fritz',attendees:16},
+  {id:'7',summary:'Client Review',start:'2026-06-23T22:30:00+08:00',end:'2026-06-23T23:00:00+08:00',meetUrl:'https://meet.google.com/mxc-xpaf-dwm',organizer:'joel',attendees:9},
+  {id:'8',summary:'AHM daily Meeting',start:'2026-06-24T17:00:00+08:00',end:'2026-06-24T17:30:00+08:00',location:'Philippines',meetUrl:'https://meet.google.com/qxt-kuij-nuw',organizer:'shinna',attendees:16},
+  {id:'9',summary:'Client Review',start:'2026-06-24T22:30:00+08:00',end:'2026-06-24T23:00:00+08:00',meetUrl:'https://meet.google.com/mxc-xpaf-dwm',organizer:'joel',attendees:9},
+  {id:'10',summary:'AHM daily Meeting',start:'2026-06-25T17:00:00+08:00',end:'2026-06-25T17:30:00+08:00',location:'Philippines',meetUrl:'https://meet.google.com/qxt-kuij-nuw',organizer:'shinna',attendees:16},
+  {id:'11',summary:'Client Review',start:'2026-06-25T22:30:00+08:00',end:'2026-06-25T23:00:00+08:00',meetUrl:'https://meet.google.com/mxc-xpaf-dwm',organizer:'joel',attendees:9},
+  {id:'12',summary:'AHM daily Meeting',start:'2026-06-26T18:00:00+08:00',end:'2026-06-26T18:30:00+08:00',location:'Philippines',meetUrl:'https://meet.google.com/qxt-kuij-nuw',organizer:'shinna',attendees:16},
+  {id:'13',summary:'Client Review',start:'2026-06-26T22:30:00+08:00',end:'2026-06-26T23:00:00+08:00',meetUrl:'https://meet.google.com/mxc-xpaf-dwm',organizer:'joel',attendees:9},
+  {id:'14',summary:'AHM daily Meeting',start:'2026-06-27T17:00:00+08:00',end:'2026-06-27T17:30:00+08:00',location:'Philippines',meetUrl:'https://meet.google.com/qxt-kuij-nuw',organizer:'shinna',attendees:16},
+  {id:'15',summary:'Client Review',start:'2026-06-27T22:30:00+08:00',end:'2026-06-27T23:00:00+08:00',meetUrl:'https://meet.google.com/mxc-xpaf-dwm',organizer:'joel',attendees:9},
+];
+const EVT_COLORS={'AHM daily Meeting':{bg:'#ccccff20',bdr:'#ccccff'},'Client Review':{bg:'#f0ad4e18',bdr:'#f0ad4e'},'Team Meeting':{bg:'#dc354518',bdr:'#dc3545'}};
+const PRIORITIES={High:{color:'#fff',bg:'#dc3545'},Medium:{color:'#333',bg:'#f0ad4e'},Low:{color:'#fff',bg:'#ccccff'}};
+
+/* ═══════ STATE ═══════ */
+let S={
+  page:'calendar', sidebarOpen:true,
+  apiKey:localStorage.getItem('dashboard_api_key')||'',
+  kanban:{todo:[],progress:[],done:[]}, showKanbanForm:false,
+  codeResult:'', codeLoading:false,
+  loremResults:[], loremScanning:false, loremProgress:{c:0,t:0,s:''},
+  qaResults:[], qaScanning:false, qaProgress:{c:0,t:0,s:''},
+  qaTab:'tech',
+  cqResults:[], cqScanning:false, cqProgress:{c:0,t:0,s:''}, cqSummary:null,
+  clinicNames:[''], locations:[''],
+  photoPreview:null, photoPrompt:'', photoLoading:false, photoImages:[], photoStatus:'',
+  hfKey:localStorage.getItem('hf_key')||'',
+};
+
+/* ═══════ UTILITIES ═══════ */
+function icon(svg,sz=18,col='currentColor'){return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${svg}</svg>`}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function badge(text,bg,col='#fff'){return `<span class="badge" style="background:${bg};color:${col}">${text}</span>`}
+function fmtTime(iso){return new Date(iso).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true})}
+function fmtDate(iso){return new Date(iso).toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'})}
+function dur(s,e){const m=(new Date(e)-new Date(s))/60000;return m<60?m+'m':Math.floor(m/60)+'h'+(m%60?' '+m%60+'m':'')}
+function isToday(iso){return new Date(iso).toDateString()===new Date().toDateString()}
+function isTmrw(iso){const t=new Date();t.setDate(t.getDate()+1);return new Date(iso).toDateString()===t.toDateString()}
+function daysLeft(d){if(!d)return'';const diff=Math.ceil((new Date(d)-new Date())/864e5);return diff<0?'<span style="color:#dc3545;font-weight:700">Overdue</span>':diff===0?'Today':diff+'d'}
+function saveApiKey(v){S.apiKey=v;try{localStorage.setItem('dashboard_api_key',v)}catch{}}
+function textOf(html){return html.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim()}
+function hl(src){return src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/(\/\/.*$|\/\*[\s\S]*?\*\/|#.*$)/gm,'<span style="color:#6A9955">$1</span>').replace(/\b(const|let|var|function|return|if|else|for|while|class|import|export|from|def|async|await|try|catch|throw|new|this|self|print|lambda|True|False|None|require|module|echo|public|private|static)\b/g,'<span style="color:#569CD6">$1</span>').replace(/("(?:[^"\\]|\\.)*"|\'(?:[^\'\\]|\\.)*\'|`(?:[^`\\]|\\.)*`)/g,'<span style="color:#CE9178">$1</span>').replace(/\b(\d+\.?\d*)\b/g,'<span style="color:#B5CEA8">$1</span>')}
+function fetchTimeout(url,ms=20000){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);return fetch(url,{signal:c.signal}).finally(()=>clearTimeout(t))}
+async function proxyFetch(u){
+  const proxies=[
+    p=>'https://corsproxy.io/?'+encodeURIComponent(p),
+    p=>'https://api.allorigins.win/raw?url='+encodeURIComponent(p),
+    p=>'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(p),
+  ];
+  for(const fn of proxies){
+    try{const r=await fetchTimeout(fn(u),15000);if(!r.ok)continue;const html=await r.text();if(html&&html.length>100)return{ok:true,html,status:200}}catch{}
+  }
+  return{ok:false,html:'',status:0};
+}
+function findLinks(html,base){const b=new URL(base);const s=new Set();const re=/href=["']([^"'#]+)["']/gi;let m;while((m=re.exec(html))!==null){try{const u=new URL(m[1],base);if(u.hostname===b.hostname&&!/\.(jpg|jpeg|png|gif|svg|pdf|zip|css|js|ico|woff2?|ttf|eot|mp[34]|webp|xml)$/i.test(u.pathname)){const clean=u.origin+u.pathname.replace(/\/$/,'');s.add(clean)}}catch{}}return[...s]}
+function parseSitemap(xml){const urls=[];const re=/<loc>\s*(https?:\/\/[^<]+)\s*<\/loc>/gi;let m;while((m=re.exec(xml))!==null){const u=m[1].trim();if(!/\.(jpg|jpeg|png|gif|svg|pdf|zip|css|js|xml)$/i.test(u))urls.push(u)}return urls}
+async function discoverAllPages(startUrl,progressFn){
+  const base=new URL(startUrl);const found=new Set();const toVisit=[startUrl];found.add(startUrl.replace(/\/$/,''));
+  /* Try sitemaps first */
+  const smPaths=['/sitemap.xml','/sitemap_index.xml','/wp-sitemap.xml','/sitemap-0.xml'];
+  for(const sp of smPaths){
+    if(progressFn)progressFn('Checking sitemap: '+sp);
+    const r=await proxyFetch(base.origin+sp);
+    if(r.ok&&r.html.includes('<loc>')){
+      const sitemapUrls=parseSitemap(r.html);
+      /* Check for nested sitemaps */
+      const nested=sitemapUrls.filter(u=>u.endsWith('.xml'));
+      const pages=sitemapUrls.filter(u=>!u.endsWith('.xml'));
+      pages.forEach(u=>found.add(u.replace(/\/$/,'')));
+      for(const ns of nested.slice(0,5)){
+        const nr=await proxyFetch(ns);
+        if(nr.ok&&nr.html.includes('<loc>'))parseSitemap(nr.html).forEach(u=>found.add(u.replace(/\/$/,'')));
+      }
+      if(found.size>2)break;
+    }
+  }
+  /* Crawl links recursively (2 levels deep) */
+  const visited=new Set();const maxPages=50;
+  for(let depth=0;depth<2&&toVisit.length>0;depth++){
+    const batch=[...toVisit];toVisit.length=0;
+    for(const url of batch){
+      if(visited.has(url)||found.size>=maxPages)continue;visited.add(url);
+      if(progressFn)progressFn('Discovering: '+url.replace(/^https?:\/\//,'').slice(0,50));
+      const r=await proxyFetch(url);
+      if(!r.ok)continue;
+      const links=findLinks(r.html,url);
+      for(const link of links){
+        const clean=link.replace(/\/$/,'');
+        if(!found.has(clean)&&new URL(link).hostname===base.hostname){
+          found.add(clean);toVisit.push(link);
+        }
+        if(found.size>=maxPages)break;
+      }
+    }
+  }
+  return[...found].slice(0,maxPages);
+}
+function apiKeyBar(){return `<div class="apikey-bar">${icon('<path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/>',16,'#888')}<input type="password" placeholder="Paste your Anthropic API key — saved automatically" value="${esc(S.apiKey)}" oninput="saveApiKey(this.value)">${S.apiKey?icon('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',16,'#ccccff'):''}</div>`}
+function progressBar(c,t,s){return `<div class="card" style="padding:16px 24px"><div style="display:flex;align-items:center;gap:12;margin-bottom:10">${icon('<path d="M21 12a9 9 0 1 1-6.219-8.56"/>',16,'#ccccff')} <span style="font-size:13px;font-weight:600" class="spin">⟳</span> <span style="font-size:13px;font-weight:600">Scanning page ${c} of ${t}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${t?c/t*100:0}%"></div></div><div style="font-size:12px;color:#888;margin-top:6px;font-family:monospace">${esc(s)}</div></div>`}
+function copyText(id){const el=document.getElementById(id);if(el){navigator.clipboard.writeText(el.textContent||el.value);const btn=document.getElementById(id+'-copy');if(btn){btn.textContent='Copied ✓';setTimeout(()=>btn.textContent='Copy',1500)}}}
+
+/* ═══════ PAGE: CALENDAR ═══════ */
+function renderCalendar(){
+  const grouped={};CAL_EVENTS.forEach(ev=>{const k=fmtDate(ev.start);(grouped[k]=grouped[k]||[]).push(ev)});
+  const todayN=CAL_EVENTS.filter(e=>isToday(e.start)).length;
+  const upN=CAL_EVENTS.filter(e=>new Date(e.start)>new Date()).length;
+  let h=`<div class="page-hdr"><h2>Calendar</h2><p>Your Google Calendar — week of June 20–27, 2026</p></div>`;
+  h+=`<div class="stats-row"><div class="stat"><div class="stat-label">Today</div><div class="stat-val">${todayN}</div><div class="stat-sub">meetings</div></div><div class="stat"><div class="stat-label">This Week</div><div class="stat-val">${CAL_EVENTS.length}</div><div class="stat-sub">total events</div></div><div class="stat"><div class="stat-label">Upcoming</div><div class="stat-val">${upN}</div><div class="stat-sub">remaining</div></div></div>`;
+  for(const[date,events]of Object.entries(grouped)){
+    const today=isToday(events[0].start),tmrw=isTmrw(events[0].start);
+    h+=`<div style="margin-bottom:24px"><div class="day-label"><span class="day-name">${date}</span>${today?badge('TODAY','#ccccff','#111'):''}${tmrw?badge('TOMORROW','#888','#fff'):''}</div>`;
+    for(const ev of events){
+      const ec=EVT_COLORS[ev.summary]||{bg:'#f8f9fa',bdr:'#888'};
+      h+=`<div class="cal-event" style="background:${ec.bg};border-left:3px solid ${ec.bdr}"><div class="cal-time"><div class="cal-time-main">${fmtTime(ev.start)}</div><div class="cal-time-dur">${dur(ev.start,ev.end)}</div></div><div class="cal-details"><div class="cal-summary">${esc(ev.summary)}</div><div class="cal-meta"><span>${icon('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',13)} ${ev.attendees} attendees</span><span>Organized by ${esc(ev.organizer)}</span>${ev.location?`<span>${icon('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',13)} ${esc(ev.location)}</span>`:''}</div></div>${ev.meetUrl?`<div style="display:flex;align-items:center;margin-left:12px"><a href="${ev.meetUrl}" target="_blank" class="cal-join">${icon('<path d="m22 8-6 4 6 4V8z"/><rect width="14" height="12" x="2" y="6" rx="2"/>',14)} Join Meet</a></div>`:''}</div>`;
+    }
+    h+=`</div>`;
+  }
+  return h;
+}
+
+/* ═══════ PAGE: KANBAN ═══════ */
+function renderKanban(){
+  const k=S.kanban,total=k.todo.length+k.progress.length+k.done.length;
+  let h=`<div style="display:flex;justify-content:space-between;align-items:flex-start"><div class="page-hdr"><h2>Projects & Deadlines</h2><p>Manage your project pipeline with drag-and-drop</p></div></div>`;
+  h+=`<div class="stats-row"><div class="stat"><div class="stat-label">Total Projects</div><div class="stat-val">${total}</div></div><div class="stat"><div class="stat-label">In Progress</div><div class="stat-val">${k.progress.length}</div></div><div class="stat"><div class="stat-label">Completed</div><div class="stat-val">${k.done.length}</div></div></div>`;
+  h+=`<div style="margin-bottom:20px"><button class="btn" onclick="toggleKanbanForm()">${S.showKanbanForm?'✕ Cancel':'+ New Project'}</button></div>`;
+  if(S.showKanbanForm)h+=`<div class="card"><div style="display:flex;gap:14;flex-wrap:wrap;align-items:end"><div style="flex:2 1 200px" class="field"><label>Title</label><input class="inp" id="k-title" placeholder="Project name" onkeydown="if(event.key==='Enter')addKanbanCard()"></div><div style="flex:1 1 140px" class="field"><label>Deadline</label><input type="date" class="inp" id="k-deadline"></div><div style="flex:1 1 120px" class="field"><label>Priority</label><select class="inp" id="k-priority"><option>High</option><option selected>Medium</option><option>Low</option></select></div><div style="margin-bottom:16px"><button class="btn" onclick="addKanbanCard()">Add</button></div></div></div>`;
+  h+=`<div class="kanban-grid" id="kanban-grid">`;
+  const cols={todo:{label:'To Do',color:'#888'},progress:{label:'In Progress',color:'#f0ad4e'},done:{label:'Done',color:'#ccccff'}};
+  for(const[key,meta]of Object.entries(cols)){
+    h+=`<div class="kanban-col" id="col-${key}" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropCard(event,'${key}');this.classList.remove('over')"><div class="kanban-col-hdr"><span class="kanban-dot" style="background:${meta.color}"></span><span class="kanban-col-title">${meta.label}</span><span class="kanban-count">${k[key].length}</span></div>`;
+    if(k[key].length===0)h+=`<div class="empty-col">Drop cards here</div>`;
+    for(const card of k[key]){
+      const p=PRIORITIES[card.priority];
+      h+=`<div class="kanban-card" draggable="true" ondragstart="dragCard(event,'${key}',${card.id})"><div class="kanban-card-top"><span class="kanban-card-title">${esc(card.title)}</span><button class="kanban-card-del" onclick="removeCard('${key}',${card.id})">×</button></div><div class="kanban-card-meta">${badge(card.priority,p.bg,p.color)} <span style="font-size:11px;color:#888">${daysLeft(card.deadline)}</span>${card.deadline?` <span style="font-size:11px;color:#888">${card.deadline}</span>`:''}</div></div>`;
+    }
+    h+=`</div>`;
+  }
+  h+=`</div>`;
+  return h;
+}
+let dragData=null;
+function dragCard(e,col,id){dragData={col,id};e.dataTransfer.effectAllowed='move'}
+function dropCard(e,target){e.preventDefault();if(!dragData||dragData.col===target)return;const card=S.kanban[dragData.col].find(c=>c.id===dragData.id);if(!card)return;S.kanban[dragData.col]=S.kanban[dragData.col].filter(c=>c.id!==dragData.id);S.kanban[target].push(card);dragData=null;renderPage()}
+function addKanbanCard(){const t=document.getElementById('k-title'),d=document.getElementById('k-deadline'),p=document.getElementById('k-priority');if(!t||!t.value.trim())return;S.kanban.todo.push({id:Date.now(),title:t.value.trim(),deadline:d.value,priority:p.value});S.showKanbanForm=false;renderPage()}
+function removeCard(col,id){S.kanban[col]=S.kanban[col].filter(c=>c.id!==id);renderPage()}
+function toggleKanbanForm(){S.showKanbanForm=!S.showKanbanForm;renderPage()}
+
+/* ═══════ PAGE: CODE GENERATOR ═══════ */
+function renderCodeGen(){
+  let h=`<div class="page-hdr"><h2>Code Generator</h2><p>Describe what you need — Claude generates the code</p></div>`;
+  h+=apiKeyBar();
+  h+=`<div class="card"><div style="display:flex;gap:14;margin-bottom:16"><div style="flex:1" class="field"><label>Language</label><select class="inp" id="cg-lang"><option>HTML + CSS</option><option selected>JavaScript</option><option>Python</option><option>PHP</option><option>CSS Only</option><option>TypeScript</option><option>SQL</option><option>Bash</option></select></div></div><div class="field"><label>Describe what you want</label><textarea class="inp" id="cg-prompt" style="min-height:100px;resize:vertical" placeholder="e.g. A responsive navigation bar..."></textarea></div><button class="btn" onclick="generateCode()" ${S.codeLoading||!S.apiKey?'disabled':''}>${S.codeLoading?'Generating…':'✨ Generate Code'}</button>${!S.apiKey?'<span style="font-size:12px;color:#dc3545;margin-left:12px">API key required</span>':''}</div>`;
+  if(S.codeResult)h+=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14">${badge(document.getElementById('cg-lang')?.value||'Code','#ccccff18','#ccccff')}<button class="btn sm outline" id="code-out-copy" onclick="copyText('code-out')">Copy</button></div><div class="code-out"><pre id="code-out">${hl(S.codeResult)}</pre></div></div>`;
+  return h;
+}
+async function generateCode(){
+  const prompt=document.getElementById('cg-prompt')?.value;const lang=document.getElementById('cg-lang')?.value;
+  if(!prompt?.trim()||!S.apiKey)return;S.codeLoading=true;S.codeResult='';renderPage();
+  try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':S.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:2048,messages:[{role:'user',content:`Generate clean, well-commented ${lang} code for: ${prompt}\n\nReturn ONLY the code, no explanation, no markdown fences.`}]})});
+    const d=await r.json();S.codeResult=d.error?'// Error: '+(d.error.message||JSON.stringify(d.error)):d.content?.map(b=>b.text||'').join('\n')||'// No response';
+  }catch(e){S.codeResult='// Error: '+e.message}S.codeLoading=false;renderPage()}
+
+/* ═══════ PAGE: LOREM IPSUM CHECKER ═══════ */
+function renderLorem(){
+  let h=`<div class="page-hdr"><h2>Lorem Ipsum Checker</h2><p>Crawl a website and find leftover placeholder text</p></div>`;
+  h+=`<div class="card"><div class="field"><label>Website URL</label><div class="inp-row"><input class="inp" style="flex:1" id="lorem-url" placeholder="https://example.com" onkeydown="if(event.key==='Enter')scanLorem()"><button class="btn" onclick="scanLorem()" ${S.loremScanning?'disabled':''}>${S.loremScanning?'Scanning…':'🔍 Scan Site'}</button></div></div></div>`;
+  if(S.loremScanning)h+=progressBar(S.loremProgress.c,S.loremProgress.t,S.loremProgress.s);
+  if(S.loremResults.length>0){
+    const fails=S.loremResults.filter(r=>r.status==='fail').length;
+    h+=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16"><span style="font-weight:700;font-size:15px">${S.loremResults.length} pages scanned</span>${fails>0?badge(fails+' lorem ipsum found','#dc3545'):badge('All clean','#ccccff','#111')}</div>`;
+    for(const r of S.loremResults){
+      const cls=r.status==='fail'?'fail':r.status==='error'?'warn':'';
+      h+=`<div class="result-item ${cls}"><div style="margin-top:2px;flex-shrink:0">${r.status==='pass'?icon('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',18,'#ccccff'):r.status==='fail'?icon('<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/>',18,'#dc3545'):icon('<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/>',18,'#f0ad4e')}</div><div style="flex:1;min-width:0"><div class="result-url">${esc(r.url)}</div>${r.status==='pass'?'<div style="font-size:12px;color:#ccccff;margin-top:2px">No lorem ipsum found</div>':''}${r.status==='fail'?`<div class="result-snippet">…${esc(r.snippet)}…</div>`:''}${r.status==='error'?`<div style="font-size:12px;color:#f0ad4e;margin-top:2px">${esc(r.snippet)}</div>`:''}</div>${badge(r.status.toUpperCase(),r.status==='pass'?'#ccccff':r.status==='fail'?'#dc3545':'#f0ad4e',r.status==='pass'?'#111':'#fff')}</div>`;
+    }
+    h+=`</div>`;
+  }
+  return h;
+}
+async function scanLorem(){
+  const urlEl=document.getElementById('lorem-url');if(!urlEl||!urlEl.value.trim())return;
+  S.loremScanning=true;S.loremResults=[];renderPage();
+  let target=urlEl.value.trim();if(!target.startsWith('http'))target='https://'+target;
+  const LOREM_RE=/lorem\s+ipsum|dolor\s+sit\s+amet|consectetur\s+adipiscing|sed\s+do\s+eiusmod|ut\s+labore\s+et\s+dolore|quis\s+nostrud\s+exercitation/gi;
+  S.loremProgress={c:0,t:1,s:'Discovering pages...'};renderPage();
+  const pages=await discoverAllPages(target,s=>{S.loremProgress.s=s;renderPage()});
+  if(pages.length===0){S.loremResults=[{url:target,status:'error',snippet:'Failed to load or discover pages'}];S.loremScanning=false;renderPage();return}
+  S.loremProgress={c:0,t:pages.length,s:'Found '+pages.length+' pages'};renderPage();
+  for(let i=0;i<pages.length;i++){
+    S.loremProgress={c:i+1,t:pages.length,s:pages[i].replace(/^https?:\/\//,'').slice(0,60)};document.getElementById('content').querySelector('.progress-fill')&&(document.getElementById('content').querySelector('.progress-fill').style.width=(i+1)/pages.length*100+'%');
+    const page=await proxyFetch(pages[i]);
+    if(!page.ok){S.loremResults.push({url:pages[i],status:'error',snippet:'Failed to load'});continue}
+    const text=textOf(page.html);LOREM_RE.lastIndex=0;
+    if(LOREM_RE.test(text)){LOREM_RE.lastIndex=0;const idx=text.toLowerCase().indexOf('lorem ipsum');S.loremResults.push({url:pages[i],status:'fail',snippet:text.slice(Math.max(0,idx),idx+120).trim()})}
+    else S.loremResults.push({url:pages[i],status:'pass',snippet:null});
+  }
+  S.loremScanning=false;renderPage();
+}
+/* ═══════ PAGE: WEBSITE QA ═══════ */
+function renderQA(){
+  let h=`<div class="page-hdr"><h2>Website QA Checker</h2><p>Technical checks and content relevance analysis</p></div>`;
+  h+=`<div class="tabs"><button class="tab-btn ${S.qaTab==='tech'?'active':''}" onclick="S.qaTab='tech';renderPage()">Technical QA</button><button class="tab-btn ${S.qaTab==='content'?'active':''}" onclick="S.qaTab='content';renderPage()">Content Relevance QA</button></div>`;
+  if(S.qaTab==='tech'){
+    h+=`<div class="card"><div class="field"><label>Website URL</label><div class="inp-row"><input class="inp" style="flex:1" id="qa-url" placeholder="https://example.com" onkeydown="if(event.key==='Enter')scanQA()"><button class="btn" onclick="scanQA()" ${S.qaScanning?'disabled':''}>${S.qaScanning?'Scanning…':'🛡 Run QA'}</button></div></div></div>`;
+    if(S.qaScanning)h+=progressBar(S.qaProgress.c,S.qaProgress.t,S.qaProgress.s);
+    if(S.qaResults.length>0){for(const pg of S.qaResults){
+      const worst=pg.checks.some(c=>c.status==='fail')?'fail':pg.checks.some(c=>c.status==='warn')?'warn':'pass';
+      h+=`<div class="card qa-page ${worst==='fail'?'has-fail':worst==='warn'?'has-warn':''}"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span style="font-size:14px;font-weight:700;word-break:break-all;flex:1">${esc(pg.url)}</span>${badge(worst.toUpperCase(),worst==='fail'?'#dc3545':worst==='warn'?'#f0ad4e':'#ccccff',worst==='pass'?'#111':'#fff')}</div>`;
+      for(const c of pg.checks)h+=`<div class="qa-check">${c.status==='pass'?icon('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',15,'#ccccff'):c.status==='fail'?icon('<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/>',15,'#dc3545'):icon('<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/>',15,'#f0ad4e')}<span class="qa-check-label">${esc(c.label)}</span><span style="color:#888">${esc(c.detail)}</span></div>`;
+      h+=`</div>`;
+    }}
+  } else {
+    h+=apiKeyBar();
+    h+=`<div class="card" style="margin-bottom:20px"><div style="font-size:13px;font-weight:600;margin-bottom:16px">Setup — Define what's correct for this website</div>`;
+    h+=`<div class="field"><label>Doctor / Owner Name</label><input class="inp" id="cq-doctor" placeholder="e.g. Dr. Sarah Jones" value="${esc(document.getElementById('cq-doctor')?.value||'')}"></div>`;
+    h+=`<div class="field"><label>Valid Clinic Names</label><div id="clinic-list">`;
+    S.clinicNames.forEach((n,i)=>{h+=`<div style="display:flex;gap:8;margin-bottom:8"><input class="inp" style="flex:1" placeholder="e.g. Jones Medical Clinic" value="${esc(n)}" oninput="S.clinicNames[${i}]=this.value">${S.clinicNames.length>1?`<button class="remove-btn" onclick="S.clinicNames.splice(${i},1);renderPage()">✕</button>`:''}</div>`});
+    h+=`</div><button class="add-link" onclick="S.clinicNames.push('');renderPage()">+ Add another clinic name</button></div>`;
+    h+=`<div class="field"><label>Valid Locations</label><div id="loc-list">`;
+    S.locations.forEach((l,i)=>{h+=`<div style="display:flex;gap:8;margin-bottom:8"><input class="inp" style="flex:1" placeholder="e.g. Davao City" value="${esc(l)}" oninput="S.locations[${i}]=this.value">${S.locations.length>1?`<button class="remove-btn" onclick="S.locations.splice(${i},1);renderPage()">✕</button>`:''}</div>`});
+    h+=`</div><button class="add-link" onclick="S.locations.push('');renderPage()">+ Add another location</button></div></div>`;
+    h+=`<div class="card"><div class="field"><label>Website URL to Scan</label><div class="inp-row"><input class="inp" style="flex:1" id="cq-url" placeholder="https://example.com" onkeydown="if(event.key==='Enter')scanContent()"><button class="btn" onclick="scanContent()" ${S.cqScanning?'disabled':''}>${S.cqScanning?'Scanning…':'🔍 Scan Content'}</button></div></div>${!S.apiKey?'<div style="font-size:12px;color:#dc3545">API key required</div>':''}</div>`;
+    if(S.cqScanning)h+=progressBar(S.cqProgress.c,S.cqProgress.t,S.cqProgress.s);
+    if(S.cqSummary)h+=`<div class="stats-row"><div class="stat"><div class="stat-label">Pages Scanned</div><div class="stat-val">${S.cqSummary.pages}</div></div><div class="stat"><div class="stat-label">Issues Found</div><div class="stat-val">${S.cqSummary.issues}</div></div></div>`;
+    if(S.cqResults.length>0){for(const pg of S.cqResults){
+      const has=pg.issues.length>0;
+      h+=`<div class="card qa-page ${has?'has-fail':''}"><div style="display:flex;justify-content:space-between;align-items:center;${has?'margin-bottom:12px':''}""><span style="font-size:14px;font-weight:700;word-break:break-all;flex:1">${esc(pg.url)}</span>${badge(has?pg.issues.length+' ISSUE'+(pg.issues.length>1?'S':''):'CLEAN',has?'#dc3545':'#ccccff',has?'#fff':'#111')}</div>`;
+      if(has){h+=`<div style="display:flex;flex-direction:column;gap:4px">`;for(const iss of pg.issues){
+        const lbl={'wrong_doctor':'Wrong Doctor','wrong_clinic':'Wrong Clinic','wrong_location':'Wrong Location','missing_doctor':'Missing Doctor','missing_location':'Missing Location','irrelevant':'Irrelevant','error':'Error'}[iss.type]||iss.type;
+        const ibg=iss.type.startsWith('wrong')||iss.type==='error'?'#dc3545':iss.type==='irrelevant'?'#f0ad4e':'#dc3545';
+        h+=`<div class="issue-row ${iss.type==='irrelevant'?'warn-issue':''}">${badge(lbl,ibg)} <span style="line-height:1.4">${esc(iss.msg)}</span></div>`}h+=`</div>`}
+      h+=`</div>`;
+    }}
+  }
+  return h;
+}
+async function scanQA(){
+  const urlEl=document.getElementById('qa-url');if(!urlEl||!urlEl.value.trim())return;
+  S.qaScanning=true;S.qaResults=[];renderPage();
+  let target=urlEl.value.trim();if(!target.startsWith('http'))target='https://'+target;
+  S.qaProgress={c:0,t:1,s:'Discovering pages...'};renderPage();
+  const pages=await discoverAllPages(target,s=>{S.qaProgress.s=s;renderPage()});
+  if(pages.length===0){S.qaResults=[{url:target,checks:[{label:'Page Status',status:'fail',detail:'Failed to discover pages'}]}];S.qaScanning=false;renderPage();return}
+  S.qaProgress={c:0,t:pages.length,s:'Scanning '+pages.length+' pages'};renderPage();
+  const res=[];
+  for(let i=0;i<pages.length;i++){
+    S.qaProgress={c:i+1,t:pages.length,s:pages[i].replace(/^https?:\/\//,'').slice(0,60)};renderPage();
+    const page=await proxyFetch(pages[i]);const checks=[];
+    if(!page.ok){checks.push({label:'Page Status',status:'fail',detail:'Failed ('+(page.status||'error')+')'});}
+    else{checks.push({label:'Page Status',status:'pass',detail:'OK ('+page.status+')'});
+      const scripts=(page.html.match(/<script[\s\S]*?<\/script>/gi)||[]);const broken=(page.html.match(/src=["'][^"']*["']/gi)||[]).filter(x=>/undefined|null/.test(x)).length;
+      checks.push(broken>0?{label:'Scripts',status:'warn',detail:broken+' broken src(s)'}:{label:'Scripts',status:'pass',detail:scripts.length+' script(s), OK'});
+      const h1=(page.html.match(/<h1[\s>]/gi)||[]).length,h2=(page.html.match(/<h2[\s>]/gi)||[]).length,h3=(page.html.match(/<h3[\s>]/gi)||[]).length;
+      checks.push(h1===1?{label:'H1 Tag',status:'pass',detail:'Exactly 1 H1'}:h1===0?{label:'H1 Tag',status:'fail',detail:'No H1 found'}:{label:'H1 Tag',status:'warn',detail:h1+' H1 tags (should be 1)'});
+      checks.push(h2>0?{label:'H2 Tags',status:'pass',detail:h2+' H2 tag(s)'}:{label:'H2 Tags',status:'warn',detail:'No H2 tags'});
+      checks.push(h3>0?{label:'H3 Tags',status:'pass',detail:h3+' H3 tag(s)'}:{label:'H3 Tags',status:'warn',detail:'No H3 tags'});
+    }
+    res.push({url:pages[i],checks});
+  }
+  S.qaResults=res;S.qaScanning=false;renderPage();
+}
+async function scanContent(){
+  const doctor=document.getElementById('cq-doctor')?.value;const urlEl=document.getElementById('cq-url');
+  if(!urlEl||!urlEl.value.trim()||!doctor?.trim()||!S.apiKey)return;
+  const validClinics=S.clinicNames.filter(x=>x.trim()),validLocs=S.locations.filter(x=>x.trim());
+  S.cqScanning=true;S.cqResults=[];S.cqSummary=null;renderPage();
+  let target=urlEl.value.trim();if(!target.startsWith('http'))target='https://'+target;
+  S.cqProgress={c:0,t:1,s:'Discovering pages...'};renderPage();
+  const pages=await discoverAllPages(target,s=>{S.cqProgress.s=s;renderPage()});
+  if(pages.length===0){S.cqResults=[{url:target,issues:[{type:'error',msg:'Failed to discover pages'}]}];S.cqScanning=false;renderPage();return}
+  S.cqProgress={c:0,t:pages.length,s:'Found '+pages.length+' pages'};renderPage();
+  let totalIssues=0;
+  for(let i=0;i<pages.length;i++){
+    S.cqProgress={c:i+1,t:pages.length,s:pages[i].replace(/^https?:\/\//,'').slice(0,60)};renderPage();
+    const page=await proxyFetch(pages[i]);
+    if(!page.ok){S.cqResults.push({url:pages[i],issues:[{type:'error',msg:'Failed to load'}]});totalIssues++;continue}
+    const text=textOf(page.html).slice(0,4000);
+    try{
+      const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':S.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1024,messages:[{role:'user',content:`You are a website content QA specialist. Analyze this page content and check for issues.\n\nCORRECT doctor/owner name: "${doctor}"\nVALID clinic names: ${validClinics.length?validClinics.map(n=>'"'+n+'"').join(', '):'(none specified)'}\nVALID locations: ${validLocs.length?validLocs.map(n=>'"'+n+'"').join(', '):'(none specified)'}\n\nPAGE URL: ${pages[i]}\nPAGE CONTENT (excerpt):\n${text}\n\nCheck for these issues and respond ONLY with a JSON array. Each issue: {"type":"...","msg":"..."}.\nTypes: wrong_doctor, wrong_clinic, wrong_location, missing_doctor, missing_location, irrelevant.\nIf the page is generic (privacy, terms, contact, sitemap), do NOT flag missing_doctor or missing_location.\nIf no issues, return []. ONLY the JSON array.`}]})});
+      const d=await r.json();let issues=[];
+      if(d.content){try{issues=JSON.parse(d.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim())}catch{issues=[{type:'error',msg:'Could not parse AI response'}]}}
+      if(d.error)issues=[{type:'error',msg:d.error.message||'API error'}];
+      totalIssues+=issues.length;S.cqResults.push({url:pages[i],issues});
+    }catch(e){S.cqResults.push({url:pages[i],issues:[{type:'error',msg:e.message}]});totalIssues++}
+  }
+  S.cqSummary={pages:pages.length,issues:totalIssues};S.cqScanning=false;renderPage();
+}
+
+/* ═══════ PAGE: DOCTOR PHOTO ═══════ */
+function hfKeyBar(){
+  const k=S.hfKey||'';
+  return `<div class="apikey-bar" style="margin-bottom:12px">${icon('<path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/><line x1="16" x2="22" y1="5" y2="5"/>',16,'#888')}<input type="password" placeholder="Hugging Face token (free at huggingface.co/settings/tokens)" value="${esc(k)}" oninput="S.hfKey=this.value;try{localStorage.setItem('hf_key',this.value)}catch{}">${k?icon('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',16,'#ccccff'):''}</div>`;
+}
+function renderPhoto(){
+  let h=`<div class="page-hdr"><h2>Doctor Blog Image Generator</h2><p>Upload a doctor's photo — AI generates matching blog images to choose from</p></div>`;
+  h+=apiKeyBar();
+  h+=`<div class="card"><div style="display:grid;grid-template-columns:${S.photoPreview?'200px 1fr':'1fr'};gap:24px">`;
+  h+=`<div class="field"><label>Doctor Photo</label><div class="upload-box" onclick="document.getElementById('photo-file').click()">${S.photoPreview?`<img src="${S.photoPreview}" alt="Doctor">`:`<div style="padding:32px">${icon('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>',28,'#888')}<div style="font-size:13px;color:#888;font-weight:500;margin-top:8px">Click to upload</div></div>`}</div><input type="file" id="photo-file" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)"></div>`;
+  h+=`<div><div class="field"><label>Blog Title / Service</label><input class="inp" id="ph-title" placeholder='e.g. "Heart Health Tips"'></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:14px"><div class="field"><label>Image Style</label><select class="inp" id="ph-style"><option>Photorealistic</option><option>Editorial</option><option>Illustrated</option><option>Cinematic</option></select></div><div class="field"><label>Extra Details (optional)</label><input class="inp" id="ph-extra" placeholder='e.g. "outdoor setting"'></div></div>`;
+  h+=`<div class="field"><label>Image Provider</label><select class="inp" id="ph-provider" onchange="document.getElementById('hf-key-section').style.display=this.value==='pollinations'?'none':'block'"><option value="pollinations">Pollinations — Free, no key, 4 variations</option><option value="flux-schnell">Hugging Face FLUX.1 Schnell — Free token, fast, good quality</option><option value="sdxl">Hugging Face SDXL — Free token, reliable</option><option value="flux-dev">Hugging Face FLUX.1 Dev — Free token, best quality</option></select></div>`;
+  h+=`<div id="hf-key-section" style="display:none">${hfKeyBar()}</div>`;
+  const canGen=S.photoPreview&&S.apiKey&&!S.photoLoading;
+  h+=`<button class="btn" onclick="generatePhoto()" ${canGen?'':'disabled'}>${S.photoLoading?'⏳ '+S.photoStatus:'✨ Generate Images'}</button>`;
+  if(!S.apiKey)h+=`<span style="font-size:12px;color:#dc3545;margin-left:12px">Claude API key required</span>`;
+  h+=`</div></div></div>`;
+  if(S.photoImages&&S.photoImages.length>0){
+    h+=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16"><span style="font-weight:700;font-size:15px">${S.photoImages.length>1?'Choose Your Image — '+S.photoImages.length+' Variations':'Generated Blog Image'}</span><button class="btn sm" onclick="generatePhoto()">🔄 Regenerate</button></div>`;
+    h+=`<div style="display:grid;grid-template-columns:${S.photoImages.length>1?'1fr 1fr':'1fr'};gap:16px">`;
+    S.photoImages.forEach((img,i)=>{
+      h+=`<div style="border-radius:10px;overflow:hidden;border:1px solid #e5e5e5"><img src="${img}" style="width:100%;display:block;min-height:180px;background:#f8f9fa" alt="Variation ${i+1}" onerror="this.parentElement.querySelector('.img-err').style.display='flex';this.style.display='none'"><div class="img-err" style="display:none;align-items:center;justify-content:center;min-height:180px;color:#888;font-size:13px">Loading…</div><div style="display:flex;gap:8px;padding:10px;background:#f8f9fa;border-top:1px solid #e5e5e5"><a href="${img}" download="blog-image-${i+1}.png" class="btn sm" style="flex:1;justify-content:center">⬇ Download</a></div></div>`;
+    });
+    h+=`</div></div>`;
+  }
+  if(S.photoPrompt)h+=`<div class="card"><details><summary style="cursor:pointer;font-size:13px;font-weight:600;color:#888">View Prompt Used (for Midjourney/Leonardo)</summary><div id="photo-prompt" style="margin-top:10px;font-size:13px;line-height:1.6;background:#f8f9fa;border:1px solid #e5e5e5;border-radius:8px;padding:14px;white-space:pre-wrap;color:#666">${esc(S.photoPrompt)}</div><button class="btn sm outline" style="margin-top:8px" id="photo-prompt-copy" onclick="copyText('photo-prompt')">Copy Prompt</button></details></div>`;
+  return h;
+}
+function handlePhotoUpload(input){const file=input.files?.[0];if(!file)return;const r=new FileReader();r.onload=()=>{S.photoPreview=r.result;renderPage()};r.readAsDataURL(file)}
+async function generatePhoto(){
+  const title=document.getElementById('ph-title')?.value;const style=document.getElementById('ph-style')?.value;
+  const extra=document.getElementById('ph-extra')?.value;const provider=document.getElementById('ph-provider')?.value||'pollinations';
+  if(!S.photoPreview||!title?.trim()||!S.apiKey)return;
+  const isHF=provider!=='pollinations';
+  if(isHF&&!S.hfKey){alert('Paste your free Hugging Face token first');return}
+  S.photoLoading=true;S.photoPrompt='';S.photoImages=[];S.photoStatus='Analyzing photo…';renderPage();
+  try{
+    /* Step 1: Claude analyzes doctor photo */
+    const base64=S.photoPreview.split(',')[1];const mt=S.photoPreview.match(/data:([^;]+)/)?.[1]||'image/jpeg';
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':S.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1024,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mt,data:base64}},{type:'text',text:'You are an expert AI image prompt engineer. Analyze this photo carefully. Describe their appearance precisely: gender, age, ethnicity, hair color/style, skin tone, facial features, build.\n\nGenerate an image prompt that:\n1. Describes this exact person\'s physical appearance so AI recreates them accurately\n2. Places them in a professional medical scene for: "'+title+'"\n3. Uses '+style+' style\n4. '+(extra?'Includes: '+extra:'Clean professional medical setting')+'\n5. Include lighting, camera angle, composition\n6. Add "high quality, ultra detailed, professional photography, 8K"\n\nReturn ONLY the prompt. No explanation. Under 150 words.'}]}]})});
+    const d=await r.json();
+    if(d.error){S.photoPrompt='Error: '+(d.error.message||JSON.stringify(d.error));S.photoLoading=false;renderPage();return}
+    const prompt=d.content?.map(b=>b.text||'').join('\n')||'';
+    S.photoPrompt=prompt;
+    if(!prompt||prompt.startsWith('Error')){S.photoLoading=false;renderPage();return}
+    /* Step 2: Generate image(s) */
+    S.photoStatus='Generating images…';renderPage();
+    if(provider==='pollinations'){
+      const enc=encodeURIComponent(prompt.slice(0,1500));const ts=Date.now();
+      S.photoImages=[
+        'https://image.pollinations.ai/prompt/'+enc+'?width=1024&height=768&nologo=true&seed='+ts,
+        'https://image.pollinations.ai/prompt/'+enc+'?width=1024&height=768&nologo=true&seed='+(ts+111),
+        'https://image.pollinations.ai/prompt/'+enc+'?width=1024&height=768&nologo=true&seed='+(ts+222),
+        'https://image.pollinations.ai/prompt/'+enc+'?width=1024&height=768&nologo=true&seed='+(ts+333),
+      ];
+    } else {
+      const modelMap={'flux-schnell':'black-forest-labs/FLUX.1-schnell','sdxl':'stabilityai/stable-diffusion-xl-base-1.0','flux-dev':'black-forest-labs/FLUX.1-dev'};
+      const model=modelMap[provider]||modelMap['flux-schnell'];
+      const hfRes=await fetch('https://api-inference.huggingface.co/models/'+model,{method:'POST',headers:{'Authorization':'Bearer '+S.hfKey,'Content-Type':'application/json'},body:JSON.stringify({inputs:prompt})});
+      if(!hfRes.ok){
+        let errMsg='HuggingFace error ('+hfRes.status+')';
+        try{const e=JSON.parse(await hfRes.text());errMsg=e.error||errMsg;if(errMsg.includes('loading'))errMsg='Model is loading — wait 30s and try again'}catch{}
+        S.photoPrompt+='\\n\\n'+errMsg;S.photoLoading=false;renderPage();return;
+      }
+      const blob=await hfRes.blob();
+      S.photoImages=[URL.createObjectURL(blob)];
+    }
+  }catch(e){S.photoPrompt='Error: '+e.message}
+  S.photoLoading=false;S.photoStatus='';renderPage();
+}
+/* ═══════ NAVIGATION & RENDERING ═══════ */
+function navigate(page){
+  S.page=page;
+  document.getElementById('nav-page-title').textContent=NAV_ITEMS.find(n=>n.id===page)?.label||'';
+  renderSidebarButtons();
+  renderPage();
+}
+function renderSidebarButtons(){
+  const el=document.getElementById('nav-buttons');if(!el)return;
+  el.innerHTML=NAV_ITEMS.map(item=>`<button class="sb-btn ${S.page===item.id?'active':''}" onclick="navigate('${item.id}')">${icon(item.svg,18)} ${item.label}</button>`).join('');
+}
+function renderPage(){
+  const el=document.getElementById('content');if(!el)return;
+  switch(S.page){
+    case 'calendar':el.innerHTML=renderCalendar();break;
+    case 'projects':el.innerHTML=renderKanban();break;
+    case 'codegen':el.innerHTML=renderCodeGen();break;
+    case 'lorem':el.innerHTML=renderLorem();break;
+    case 'qa':el.innerHTML=renderQA();break;
+    case 'photo':el.innerHTML=renderPhoto();break;
+  }
+}
+function toggleSidebar(){
+  S.sidebarOpen=!S.sidebarOpen;
+  document.getElementById('sidebar').classList.toggle('closed',!S.sidebarOpen);
+  document.getElementById('main-wrap').classList.toggle('full',!S.sidebarOpen);
+  document.getElementById('menu-btn').style.display=S.sidebarOpen?'none':'block';
+}
+
+/* ═══════ INIT ═══════ */
+document.addEventListener('DOMContentLoaded',()=>{
+  renderSidebarButtons();
+  renderPage();
+});
+</script>
+</body>
+</html>
